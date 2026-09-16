@@ -1,0 +1,46 @@
+name: PR Title Test
+
+on:
+  pull_request:
+    types:
+      - opened
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  rename-pr:
+    name: Rename PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update pull request title
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const head = context.payload.pull_request.head.ref;
+            const base = context.payload.pull_request.base.ref;
+
+            let title = null;
+
+            if (head === 'develop' && base === 'staging') {
+              title = 'chore(release): RC-1.2.3';
+            } else if (head === 'staging' && base === 'master') {
+              title = 'chore(release): 1.2.3';
+            }
+
+            if (!title) {
+              core.info(`No title update for ${head} -> ${base}`);
+              return;
+            }
+
+            core.info(`Updating PR title to "${title}"`);
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              title,
+            });
