@@ -41,7 +41,15 @@ jobs:
 
               core.info(`Latest tag: ${latestTag}`);
 
-              title = `chore(release): RC-${latestTag}`;
+              const [major, minor, patch] = latestTag
+                .split('.')
+                .map(Number);
+
+              const nextVersion = `${major}.${minor}.${patch + 1}`;
+
+              core.info(`Next tag: ${nextVersion}`);
+
+              title = `chore(release): RC-${nextVersion}`;
             }
 
             else if (head === 'staging' && base === 'master') {
