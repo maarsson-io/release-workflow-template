@@ -10,13 +10,19 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
+  rename-pr:
+    name: Rename PR
     runs-on: ubuntu-latest
 
     steps:
-      - name: Rename PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} \
-            --title "TEST TITLE"
+      - name: Update pull request title
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              title: 'TEST TITLE',
+            });
