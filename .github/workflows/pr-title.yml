@@ -15,24 +15,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Debug checkout
+        run: |
+          git branch --show-current
+          git rev-parse HEAD
+          git log -3 --oneline
+
       - name: Update pull request title
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { execSync } = require('child_process');
+
             const head = context.payload.pull_request.head.ref;
             const base = context.payload.pull_request.base.ref;
 
             let title = null;
 
             if (head === 'develop' && base === 'staging') {
-              title = 'chore(release): RC-1.2.3';
-            } else if (head === 'staging' && base === 'master') {
-              title = 'chore(release): 1.2.3';
+              const latestTag = execSync(
+                'git tag --sort=-version:refname | head -n1',
+                { encoding: 'utf8' }
+              ).trim();
+
+              core.info(`Latest tag: ${latestTag}`);
+
+              title = `chore(release): RC-${latestTag}`;
+            }
+
+            else if (head === 'staging' && base === 'master') {
+              const latestCommitTitle = execSync(
+                'git log -1 --pretty=%s',
+                { encoding: 'utf8' }
+              ).trim();
+
+              core.info(`Latest commit: ${latestCommitTitle}`);
+
+              const match = latestCommitTitle.match(
+                /^chore\(release\): RC-([0-9]+\.[0-9]+\.[0-9]+)(?:\s+\(#\d+\))?$/
+              );
+
+              if (!match) {
+                core.setFailed(
+                  `Expected latest commit to be a release merge commit. Found: "${latestCommitTitle}"`
+                );
+
+                return;
+              }
+
+              const version = match[1];
+
+              title = `chore(release): ${version}`;
             }
 
             if (!title) {
               core.info(`No title update for ${head} -> ${base}`);
+
               return;
             }
 
