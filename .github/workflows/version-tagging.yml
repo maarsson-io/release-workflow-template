@@ -1,4 +1,4 @@
-name: Create Release Tag
+name: Release Tag
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  create-tag:
+  create-release-tag:
     name: Create Release Tag
 
     if: >
@@ -22,13 +22,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout master
+      - name: Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: master
 
-      - name: Create release tag
+      - name: Create Release Tags
         shell: bash
         run: |
           set -euo pipefail
@@ -42,24 +42,24 @@ jobs:
             exit 1
           fi
 
-          version="${BASH_REMATCH[1]}"
+          release_version="${BASH_REMATCH[1]}"
 
-          echo "Release version: ${version}"
+          echo "Release version: ${release_version}"
 
-          if git rev-parse "${version}" >/dev/null 2>&1; then
-            existing_commit="$(git rev-list -n1 "${version}")"
+          if git rev-parse "${release_version}" >/dev/null 2>&1; then
+            existing_commit="$(git rev-list -n1 "${release_version}")"
             head_commit="$(git rev-parse HEAD)"
 
             if [[ "${existing_commit}" == "${head_commit}" ]]; then
-              echo "Tag ${version} already exists on current commit."
+              echo "Tag ${release_version} already exists on current commit."
               exit 0
             fi
 
-            echo "::error::Tag ${version} already exists on a different commit."
+            echo "::error::Tag ${release_version} already exists on a different commit."
             exit 1
           fi
 
-          git tag "${version}"
-          git push origin "${version}"
+          git tag "${release_version}"
+          git push origin "${release_version}"
 
-          echo "Created tag ${version}."
+          echo "Created tag ${release_version}."

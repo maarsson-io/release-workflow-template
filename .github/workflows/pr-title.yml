@@ -1,4 +1,4 @@
-name: PR Title Test
+name: Release PR Title
 
 on:
   pull_request:
@@ -10,24 +10,18 @@ permissions:
   pull-requests: write
 
 jobs:
-  rename-pr:
-    name: Rename PR
+  update-pr-title:
+    name: Update PR Title
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Debug checkout
-        run: |
-          git branch --show-current
-          git rev-parse HEAD
-          git log -3 --oneline
-
-      - name: Update pull request title
+      - name: Update PR Title
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -47,7 +41,15 @@ jobs:
 
               core.info(`Latest tag: ${latestTag}`);
 
-              title = `chore(release): RC-${latestTag}`;
+              const [major, minor, patch] = latestTag
+                .split('.')
+                .map(Number);
+
+              const nextVersion = `${major}.${minor}.${patch + 1}`;
+
+              core.info(`Next tag: ${nextVersion}`);
+
+              title = `chore(release): RC-${nextVersion}`;
             }
 
             else if (head === 'staging' && base === 'master') {
