@@ -6,6 +6,7 @@ on:
       - opened
 
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
@@ -13,8 +14,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Dump event
+      - name: Rename PR
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Head: ${{ github.event.pull_request.head.ref }}"
-          echo "Base: ${{ github.event.pull_request.base.ref }}"
-          echo "Title: ${{ github.event.pull_request.title }}"
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --title "TEST TITLE"
