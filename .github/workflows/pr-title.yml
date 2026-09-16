@@ -15,20 +15,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: Update pull request title
         uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const { execSync } = require('child_process');
+
+            const latestTag = execSync(
+              'git tag --sort=-version:refname | head -n1',
+              { encoding: 'utf8' }
+            ).trim();
+
+            core.info(`Latest tag: ${latestTag}`);
+
             const head = context.payload.pull_request.head.ref;
             const base = context.payload.pull_request.base.ref;
 
             let title = null;
 
             if (head === 'develop' && base === 'staging') {
-              title = 'chore(release): RC-1.2.3';
+              title = `chore(release): RC-${latestTag}`;
             } else if (head === 'staging' && base === 'master') {
-              title = 'chore(release): 1.2.3';
+              title = `chore(release): ${latestTag}`;
             }
 
             if (!title) {
