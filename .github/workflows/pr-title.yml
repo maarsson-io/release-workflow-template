@@ -1,0 +1,20 @@
+name: PR Title Test
+
+on:
+  pull_request:
+    types:
+      - opened
+
+permissions:
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dump event
+        run: |
+          echo "Head: ${{ github.event.pull_request.head.ref }}"
+          echo "Base: ${{ github.event.pull_request.base.ref }}"
+          echo "Title: ${{ github.event.pull_request.title }}"
