@@ -4,7 +4,7 @@ Zero-dependency GitHub Actions workflow template for semi-automated semantic ver
 
 Unlike fully automated release systems, this workflow only automates the repetitive parts of the release process. The version number itself remains a deliberate human decision.
 
-> \[!Why Not Fully Automated Versioning?]
+> ### Why Not Fully Automated Versioning?
 >
 > This template intentionally does not determine release types from commit history.
 > Instead, it automatically suggests the next patch version, which is the most common case, while leaving the final version number under the developer's control.
