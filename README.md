@@ -58,7 +58,7 @@ flowchart LR
 
 Create a pull request from `develop` to `staging`.
 
-The **Release PR Title** workflow reads the latest Git tag, suggests the next patch version and automatically updates the PR title:
+The [Release PR Title workflow](.github/workflows/release-pr-title.yml) reads the latest Git tag, suggests the next patch version and automatically updates the PR title:
 
 ```text
 chore(release): RC-2.1.4
@@ -93,7 +93,7 @@ Both merge commits and squash merges are supported as long as the resulting comm
 
 Create a pull request from `staging` to `master`.
 
-The **Release PR Title** workflow reads the latest commit on `staging`, removes the `RC-` prefix and automatically updates the PR title:
+The [Release PR Title workflow](.github/workflows/release-pr-title.yml) reads the latest commit on `staging`, removes the `RC-` prefix and automatically updates the PR title:
 
 ```text
 chore(release): 2.1.4
@@ -102,7 +102,7 @@ chore(release): 2.1.4
 ### 5. Merge into Master
 
 Merge the PR normally. The resulting commit should preserve the PR title.
-After merging, the **Release Tag** workflow:
+After merging, the [Release Tag workflow](.github/workflows/release-tag.yml):
 
 - validates the merge commit title
 - extracts the version number
@@ -170,4 +170,4 @@ The workflows are intentionally small and can usually be understood and customiz
 
 ## Support
 
-- Found a bug? Please open an Issue.
+- Found a bug? Please [open an Issue](issues/new?template=bug_report.md).
