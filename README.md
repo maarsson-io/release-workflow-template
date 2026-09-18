@@ -138,6 +138,7 @@ The workflow intentionally never decides whether a release is major, minor, or p
 The workflow assumes that:
 
 - Git tags are used for released versions.
+- Tags do not use a `v` prefix (e.g. `2.1.2`, not `v2.1.2`).
 - Release candidate PR titles follow the format `chore(release): RC-x.y.z`.
 - Production release PR titles follow the format `chore(release): x.y.z`.
 - The merged commit preserves the release title. GitHub's default merge settings satisfy this requirement for both merge commits and squash merges.
@@ -159,11 +160,12 @@ This makes the tagging workflow idempotent and safe to re-run.
 
 The implementation is intentionally minimal.
 
-Most projects only need to modify:
+Most projects only may need to modify:
 
 - branch names
 - commit title format
 - release prefix
+- adding a `v` tag prefix
 - version bump logic
 
 The workflows are intentionally small and can usually be understood and customized in just a few minutes.
