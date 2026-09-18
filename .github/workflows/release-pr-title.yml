@@ -39,13 +39,19 @@ jobs:
                 { encoding: 'utf8' }
               ).trim();
 
-              core.info(`Latest tag: ${latestTag}`);
+              core.info(`Latest tag: ${latestTag || '(none)'}`);
 
-              const [major, minor, patch] = latestTag
-                .split('.')
-                .map(Number);
+              let nextVersion;
 
-              const nextVersion = `${major}.${minor}.${patch + 1}`;
+              if (!latestTag) {
+                nextVersion = '0.1.0';
+              } else {
+                const [major, minor, patch] = latestTag
+                  .split('.')
+                  .map(Number);
+
+                nextVersion = `${major}.${minor}.${patch + 1}`;
+              }
 
               core.info(`Next tag: ${nextVersion}`);
 
