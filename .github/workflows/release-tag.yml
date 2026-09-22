@@ -26,8 +26,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          # Tag the merge result from this pull_request.closed event, not a later master commit.
-          ref: ${{ github.sha }}
+          # Tag the final merge commit from this pull_request.closed event, not a synthetic PR merge SHA.
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
 
       - name: Create Release Tags
         shell: bash
