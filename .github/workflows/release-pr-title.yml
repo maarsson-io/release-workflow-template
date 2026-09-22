@@ -4,6 +4,9 @@ on:
   pull_request:
     types:
       - opened
+    branches:
+      - staging
+      - master
 
 permissions:
   contents: read
@@ -12,6 +15,9 @@ permissions:
 jobs:
   update-pr-title:
     name: Update PR Title
+    if: >-
+      ((github.event.pull_request.head.ref == 'develop' && github.event.pull_request.base.ref == 'staging') ||
+      (github.event.pull_request.head.ref == 'staging' && github.event.pull_request.base.ref == 'master'))
     runs-on: ubuntu-latest
 
     steps:
