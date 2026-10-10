@@ -1,6 +1,6 @@
 # Two-stage Versioning Workflow
 
-Zero-dependency GitHub Actions workflow template for semi-automated semantic versioning and release tagging using `develop → master`.
+Zero-dependency GitHub Actions workflow template for semi-automated semantic versioning, release tagging, and GitHub Release creation using `develop → master`.
 
 Unlike fully automated release systems, this workflow only automates the repetitive parts of the release process. The version number itself remains a deliberate human decision.
 
@@ -18,7 +18,8 @@ Unlike fully automated release systems, this workflow only automates the repetit
 - Manual minor/major version selection
 - Automatic release PR title generation
 - Automatic version tag creation
-- Idempotent tag creation
+- Automatic GitHub Release creation with the **Latest** label
+- Idempotent tag and release creation
 - Safe failure when release metadata is invalid
 - No GitHub Apps or Personal Access Tokens
 - No Conventional Commits required
@@ -58,6 +59,8 @@ flowchart LR
     B --> C["Merge"]
     C --> D("`Tag created
     <code>2.1.4</code>`")
+    D --> E("`Latest release published
+    <code>2.1.4</code>`")
 ```
 
 ### 1. Create a Release PR
@@ -92,13 +95,15 @@ chore(release): 2.1.4 (#42)
 
 Both merge commits and squash merges are supported as long as the resulting commit title preserves the release title.
 
-After a successful merge, the [Release Tag workflow](.github/workflows/release-tag.yml) validates the merged commit title, extracts its version number and creates the tag on that commit:
+After a successful merge, the [Release Tag and Release workflow](.github/workflows/release-tag.yml) validates the merged commit title, extracts its version number and creates the tag on that commit:
 
 ```text
 2.1.4
 ```
 
-Closing a PR without merging does not create a tag.
+After the tag is created, the same workflow publishes a GitHub Release named `2.1.4` for that tag and marks it as **Latest**. It uses the built-in `GITHUB_TOKEN` with `contents: write`; no additional token is required.
+
+Closing a PR without merging does not create a tag or release.
 
 ## Versioning Philosophy
 
@@ -138,8 +143,11 @@ The workflow:
 - never overwrites an existing tag
 - succeeds when re-run on the same commit
 - fails if an existing tag points to another commit
+- creates a missing release even when the tag already exists on the same commit
+- leaves an existing release unchanged when re-run
+- stops before release creation if tagging fails
 
-This makes the tagging workflow idempotent and safe to re-run.
+This makes tag and release creation idempotent and safe to re-run. Re-running an older release does not move the **Latest** label back to it.
 
 ## Customization
 

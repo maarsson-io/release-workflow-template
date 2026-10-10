@@ -1,4 +1,4 @@
-name: Release Tag
+name: Release Tag and Release
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   create-release-tag:
-    name: Create Release Tag
+    name: Create Release Tag and Release
 
     if: >
       github.event.pull_request.merged == true &&
@@ -29,7 +29,8 @@ jobs:
           # Tag the final merge commit from this pull_request.closed event, not a synthetic PR merge SHA.
           ref: ${{ github.event.pull_request.merge_commit_sha }}
 
-      - name: Create Release Tags
+      - name: Create Release Tag
+        id: tag
         shell: bash
         run: |
           set -euo pipefail
@@ -46,6 +47,7 @@ jobs:
           release_version="${BASH_REMATCH[1]}"
 
           echo "Release version: ${release_version}"
+          echo "version=${release_version}" >> "$GITHUB_OUTPUT"
 
           if git rev-parse "${release_version}" >/dev/null 2>&1; then
             existing_commit="$(git rev-list -n1 "${release_version}")"
@@ -64,3 +66,38 @@ jobs:
           git push origin "${release_version}"
 
           echo "Created tag ${release_version}."
+
+      - name: Create Latest Release
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          RELEASE_VERSION: ${{ steps.tag.outputs.version }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const version = process.env.RELEASE_VERSION;
+            const repo = context.repo;
+
+            try {
+              await github.rest.repos.getReleaseByTag({
+                ...repo,
+                tag: version,
+              });
+
+              core.info(`Release ${version} already exists.`);
+              return;
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }
+
+            await github.rest.repos.createRelease({
+              ...repo,
+              tag_name: version,
+              name: version,
+              draft: false,
+              prerelease: false,
+              make_latest: 'true',
+            });
+
+            core.info(`Created Latest release ${version}.`);
