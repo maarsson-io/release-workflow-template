@@ -1,0 +1,66 @@
+name: Release Tag
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  create-release-tag:
+    name: Create Release Tag
+
+    if: >
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'develop' &&
+      github.event.pull_request.base.ref == 'master'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          # Tag the final merge commit from this pull_request.closed event, not a synthetic PR merge SHA.
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Create Release Tags
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          latest_commit_title="$(git log -1 --pretty=%s)"
+
+          echo "Latest commit: ${latest_commit_title}"
+
+          if [[ ! "${latest_commit_title}" =~ ^chore\(release\):\ ([0-9]+\.[0-9]+\.[0-9]+)(\ \(#[0-9]+\))?$ ]]; then
+            echo "::error::Expected latest commit to be a release merge commit. Found: '${latest_commit_title}'"
+            exit 1
+          fi
+
+          release_version="${BASH_REMATCH[1]}"
+
+          echo "Release version: ${release_version}"
+
+          if git rev-parse "${release_version}" >/dev/null 2>&1; then
+            existing_commit="$(git rev-list -n1 "${release_version}")"
+            head_commit="$(git rev-parse HEAD)"
+
+            if [[ "${existing_commit}" == "${head_commit}" ]]; then
+              echo "Tag ${release_version} already exists on current commit."
+              exit 0
+            fi
+
+            echo "::error::Tag ${release_version} already exists on a different commit."
+            exit 1
+          fi
+
+          git tag "${release_version}"
+          git push origin "${release_version}"
+
+          echo "Created tag ${release_version}."

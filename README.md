@@ -6,12 +6,12 @@ The workflows automate release PR titles and version tags. They suggest the next
 
 ## Templates
 
-| Template | Branching strategy | Status |
-| --- | --- | --- |
-| [Three-stage](templates/three-stage/README.md) | `develop → staging → master` | Available |
-| Two-stage | `develop → master` | Planned |
+| Template | Branching strategy |
+| --- | --- |
+| [Three-stage](templates/three-stage/README.md) | `develop → staging → master` |
+| [Two-stage](templates/two-stage/README.md) | `develop → master` |
 
-The three-stage template includes a release candidate step on `staging`. The planned two-stage template will release directly from `develop` to `master` without staging.
+The three-stage template includes a release candidate step on `staging`. The two-stage template releases directly from `develop` to `master` without staging.
 
 ## Installation
 
